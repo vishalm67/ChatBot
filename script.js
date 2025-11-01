@@ -1,69 +1,87 @@
-  const API_BASE_URL = 'http://localhost:8080/api/chat';
+const API_BASE_URL = 'http://localhost:8080/api/chat';
         
-        // Global variables
+        // State
         let username = '';
         let sessionId = null;
-        let messageCount = 0;
+        let isProcessing = false;
+
+        // Elements
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const messagesArea = document.getElementById('messagesArea');
+        const inputArea = document.getElementById('inputArea');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const errorBanner = document.getElementById('errorBanner');
 
         // Auto-resize textarea
-        const messageInput = document.getElementById('messageInput');
         messageInput.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = (this.scrollHeight) + 'px';
         });
 
-        // Enter key to send (Shift+Enter for new line)
-        messageInput.addEventListener('keypress', function(e) {
+        // Enter to send (Shift+Enter for new line)
+        messageInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 sendMessage();
             }
         });
 
-        // Start chat function
+        // Start chat
         function startChat() {
-            const usernameField = document.getElementById('usernameField');
-            const name = usernameField.value.trim();
+            const input = document.getElementById('usernameInput');
+            const name = input.value.trim();
             
             if (!name) {
-                showError('Please enter your name to start chatting');
+                showError('Please enter your name');
                 return;
             }
 
             username = name;
+            welcomeScreen.classList.add('hidden');
+            messagesArea.classList.remove('hidden');
+            inputArea.classList.remove('hidden');
             
-            // Hide username input, show message input
-            document.getElementById('usernameInput').style.display = 'none';
-            document.getElementById('messageInputArea').classList.add('active');
-            
-            // Hide welcome screen
-            document.getElementById('welcomeScreen').style.display = 'none';
-            
-            // Show greeting message
-            addBotMessage(`Hello ${username}! 👋 I'm your AI assistant. How can I help you today?`, 'GREETING');
-            
-            // Focus on message input
+            addBotMessage(`Hello ${username}! How can I assist you today?`, 'GREETING');
             messageInput.focus();
         }
 
-        // Send message function
+        // Quick start with pre-filled message
+        function quickStart(message) {
+            const input = document.getElementById('usernameInput');
+            const name = input.value.trim();
+            
+            if (!name) {
+                showError('Please enter your name first');
+                return;
+            }
+
+            username = name;
+            welcomeScreen.classList.add('hidden');
+            messagesArea.classList.remove('hidden');
+            inputArea.classList.remove('hidden');
+            
+            messageInput.value = message;
+            messageInput.focus();
+        }
+
+        // Send message
         async function sendMessage() {
             const message = messageInput.value.trim();
             
-            if (!message) return;
+            if (!message || isProcessing) return;
 
-            // Add user message to chat
+            isProcessing = true;
+            sendBtn.disabled = true;
+
             addUserMessage(message);
-            
-            // Clear input
             messageInput.value = '';
             messageInput.style.height = 'auto';
             
-            // Show typing indicator
-            showTypingIndicator();
+            showTyping();
 
             try {
-                // Call API
                 const response = await fetch(`${API_BASE_URL}/message`, {
                     method: 'POST',
                     headers: {
@@ -77,149 +95,153 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error('Failed to get response from server');
+                    throw new Error('Server error');
                 }
 
                 const data = await response.json();
                 
-                // Save session ID
                 if (!sessionId) {
                     sessionId = data.sessionId;
                 }
 
-                // Hide typing indicator
-                hideTypingIndicator();
-
-                // Add bot response
-                addBotMessage(data.response, data.intent, data.confidence);
+                hideTyping();
+                addBotMessage(data.response, data.intent);
 
             } catch (error) {
                 console.error('Error:', error);
-                hideTypingIndicator();
-                showError('Failed to connect to chatbot. Make sure the backend is running on port 8080.');
-                addBotMessage('Sorry, I\'m having trouble connecting right now. Please make sure the backend server is running.', 'ERROR');
-            }
-        }
-
-        // Add user message to chat
-        function addUserMessage(text) {
-            const messagesContainer = document.getElementById('messagesContainer');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message user';
-            
-            const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-            
-            messageDiv.innerHTML = `
-                <div class="message-content">
-                    <div>${text}</div>
-                    <div class="message-time">${time}</div>
-                </div>
-                <div class="message-avatar">👤</div>
-            `;
-            
-            messagesContainer.appendChild(messageDiv);
-            scrollToBottom();
-            messageCount++;
-        }
-
-        // Add bot message to chat
-        function addBotMessage(text, intent = '', confidence = null) {
-            const messagesContainer = document.getElementById('messagesContainer');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message bot';
-            
-            const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-            
-            let intentBadge = '';
-            if (intent && intent !== 'ERROR') {
-                intentBadge = `<div class="intent-badge">${intent}</div>`;
-            }
-            
-            messageDiv.innerHTML = `
-                <div class="message-avatar">🤖</div>
-                <div class="message-content">
-                    <div>${text}</div>
-                    ${intentBadge}
-                    <div class="message-time">${time}</div>
-                </div>
-            `;
-            
-            messagesContainer.appendChild(messageDiv);
-            scrollToBottom();
-            messageCount++;
-        }
-
-        // Show/hide typing indicator
-        function showTypingIndicator() {
-            document.getElementById('typingIndicator').classList.add('show');
-            scrollToBottom();
-        }
-
-        function hideTypingIndicator() {
-            document.getElementById('typingIndicator').classList.remove('show');
-        }
-
-        // Scroll to bottom
-        function scrollToBottom() {
-            const messagesContainer = document.getElementById('messagesContainer');
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-
-        // Show error message
-        function showError(message) {
-            const errorDiv = document.getElementById('errorMessage');
-            errorDiv.textContent = message;
-            errorDiv.classList.add('show');
-            
-            setTimeout(() => {
-                errorDiv.classList.remove('show');
-            }, 5000);
-        }
-
-        // Suggestion chip click
-        function suggestMessage(message) {
-            if (username) {
-                messageInput.value = message;
+                hideTyping();
+                showError('Connection failed. Please check if the backend is running.');
+                addBotMessage('I\'m having trouble connecting. Please try again later.', 'ERROR');
+            } finally {
+                isProcessing = false;
+                sendBtn.disabled = false;
                 messageInput.focus();
             }
         }
 
+        // Add user message
+        function addUserMessage(text) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'message-wrapper user';
+            
+            const time = new Date().toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            wrapper.innerHTML = `
+                <div class="message">
+                    <div class="message-bubble">${escapeHtml(text)}</div>
+                    <div class="message-meta">
+                        <span>${time}</span>
+                    </div>
+                </div>
+            `;
+            
+            messagesArea.insertBefore(wrapper, typingIndicator);
+            scrollToBottom();
+        }
+
+        // Add bot message
+        function addBotMessage(text, intent = '') {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'message-wrapper bot';
+            
+            const time = new Date().toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            let intentBadge = '';
+            if (intent && intent !== 'ERROR' && intent !== 'UNKNOWN') {
+                intentBadge = `<span class="intent-badge">${intent}</span>`;
+            }
+            
+            wrapper.innerHTML = `
+                <div class="message">
+                    <div class="message-bubble">${escapeHtml(text)}</div>
+                    <div class="message-meta">
+                        <span>${time}</span>
+                        ${intentBadge}
+                    </div>
+                </div>
+            `;
+            
+            messagesArea.insertBefore(wrapper, typingIndicator);
+            scrollToBottom();
+        }
+
+        // Show/hide typing
+        function showTyping() {
+            typingIndicator.classList.add('show');
+            scrollToBottom();
+        }
+
+        function hideTyping() {
+            typingIndicator.classList.remove('show');
+        }
+
+        // Scroll to bottom
+        function scrollToBottom() {
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+
+        // Show error
+        function showError(message) {
+            document.getElementById('errorText').textContent = message;
+            errorBanner.classList.add('show');
+            
+            setTimeout(() => {
+                errorBanner.classList.remove('show');
+            }, 5000);
+        }
+
         // Clear chat
         function clearChat() {
-            if (confirm('Are you sure you want to clear the chat?')) {
-                const messagesContainer = document.getElementById('messagesContainer');
-                messagesContainer.innerHTML = `
-                    <div class="welcome-screen" id="welcomeScreen">
-                        <div class="welcome-icon">👋</div>
-                        <h3>Welcome Back!</h3>
-                        <p>Chat cleared. Start a new conversation below.</p>
-                    </div>
-                    <div class="typing-indicator" id="typingIndicator">
-                        <div class="message-avatar">🤖</div>
-                        <div class="typing-dots">
-                            <div class="typing-dot"></div>
-                            <div class="typing-dot"></div>
-                            <div class="typing-dot"></div>
-                        </div>
-                    </div>
-                `;
-                messageCount = 0;
+            if (confirm('Clear all messages?')) {
+                const messages = messagesArea.querySelectorAll('.message-wrapper');
+                messages.forEach(msg => msg.remove());
             }
         }
 
-        // Toggle settings (placeholder)
-        function toggleSettings() {
-            alert('Settings panel coming soon!\n\nFeatures:\n- Change theme\n- Export chat history\n- Clear session\n- API configuration');
+        // Export chat
+        function exportChat() {
+            const messages = [];
+            document.querySelectorAll('.message-wrapper').forEach(wrapper => {
+                const isUser = wrapper.classList.contains('user');
+                const text = wrapper.querySelector('.message-bubble').textContent;
+                messages.push({
+                    sender: isUser ? username : 'Bot',
+                    message: text,
+                    timestamp: new Date().toISOString()
+                });
+            });
+            
+            const dataStr = JSON.stringify(messages, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `chat-export-${Date.now()}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
         }
 
-        // Check backend connection on load
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Check backend on load
         window.addEventListener('load', async () => {
             try {
                 const response = await fetch(`${API_BASE_URL}/health`);
                 if (response.ok) {
-                    console.log('✅ Backend connected successfully');
+                    console.log('✅ Backend connected');
                 }
             } catch (error) {
-                console.warn('⚠️ Backend not connected. Make sure Spring Boot app is running on port 8080');
+                console.warn('⚠️ Backend not reachable');
             }
         });

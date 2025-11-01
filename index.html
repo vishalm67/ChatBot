@@ -7,67 +7,83 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <body>
-    <div class="chat-container">
+   <body>
+    <div class="app-container">
         <!-- Header -->
-        <div class="chat-header">
-            <div class="chat-header-left">
-                <div class="bot-avatar">🤖</div>
-                <div class="bot-info">
-                    <h2>ChatBot Assistant</h2>
-                    <div class="bot-status">
-                        <span class="status-dot"></span>
-                        <span>Online</span>
-                    </div>
+        <header class="header">
+            <div class="header-left">
+                <h1 class="brand">Find</h1>
+                <div class="status">
+                    <span class="status-dot"></span>
+                    <!-- <span>Online</span> -->
                 </div>
             </div>
             <div class="header-actions">
-                <button class="header-btn" onclick="clearChat()" title="Clear Chat">🗑️</button>
-                <button class="header-btn" onclick="toggleSettings()" title="Settings">⚙️</button>
+                <button class="icon-btn" onclick="clearChat()" title="Clear Chat">
+                    <span>🗑</span>
+                </button>
+                <button class="icon-btn" onclick="exportChat()" title="Export">
+                    <span>↓</span>
+                </button>
             </div>
+        </header>
+
+        <!-- Error Banner -->
+        <div class="error-banner" id="errorBanner">
+            <span>⚠</span>
+            <span id="errorText"></span>
         </div>
 
-        <!-- Error Message -->
-        <div class="error-message" id="errorMessage"></div>
-
-        <!-- Messages Container -->
-        <div class="messages-container" id="messagesContainer">
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Welcome Screen -->
             <div class="welcome-screen" id="welcomeScreen">
-                <h3>Welcome to ChatBot!</h3>
-                <p>I'm your AI assistant. I can help you with greetings, jokes, time & date queries, and general questions.</p>
-                <p style="color: #999; font-size: 0.9em;">Enter your name below to start chatting</p>
+                <h2 class="welcome-title">Welcome</h2>
+                <p class="welcome-subtitle">
+                    Start a conversation with our AI assistant. Get help with questions, tasks, and more.
+                </p>
+                <div class="input-group">
+                    <input 
+                        type="text" 
+                        id="usernameInput" 
+                        class="input-field" 
+                        placeholder="Enter your name"
+                        maxlength="20"
+                    >
+                    <button class="btn-primary" onclick="startChat()">Continue</button>
+                </div>
                 <div class="suggestions">
-                    <div class="suggestion-chip" onclick="suggestMessage('Hello!')">👋 Say Hello</div>
-                    <div class="suggestion-chip" onclick="suggestMessage('Tell me a joke')">😄 Tell a Joke</div>
-                    <div class="suggestion-chip" onclick="suggestMessage('What time is it?')">⏰ Current Time</div>
-                    <div class="suggestion-chip" onclick="suggestMessage('Help me')">❓ Get Help</div>
+                    <div class="suggestion-chip" onclick="quickStart('Hello!')">Say Hello</div>
+                    <div class="suggestion-chip" onclick="quickStart('Tell me a joke')">Get a Joke</div>
+                    <div class="suggestion-chip" onclick="quickStart('What time is it?')">Check Time</div>
+                    <div class="suggestion-chip" onclick="quickStart('Help me')">Need Help</div>
                 </div>
             </div>
 
-            <!-- Typing Indicator -->
-            <div class="typing-indicator" id="typingIndicator">
-                <div class="message-avatar">🤖</div>
-                <div class="typing-dots">
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
+            <!-- Messages Area -->
+            <div class="messages-area hidden" id="messagesArea">
+                <!-- Typing Indicator -->
+                <div class="typing-indicator" id="typingIndicator">
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
                 </div>
             </div>
-        </div>
+        </main>
 
-        <!-- Input Container -->
-        <div class="input-container">
-            <!-- Username Input (Initial) -->
-            <div class="username-input" id="usernameInput">
-                <input type="text" id="usernameField" placeholder="Enter your name..." maxlength="20">
-                <button class="start-chat-btn" onclick="startChat()">Start Chat</button>
-            </div>
-
-            <!-- Message Input (After username) -->
-            <div class="message-input-area" id="messageInputArea">
-                <textarea id="messageInput" placeholder="Type your message..." rows="1"></textarea>
+        <!-- Input Area -->
+        <div class="input-area hidden" id="inputArea">
+            <div class="input-container">
+                <textarea 
+                    id="messageInput" 
+                    class="message-input" 
+                    placeholder="Type your message..."
+                    rows="1"
+                ></textarea>
                 <button class="send-btn" id="sendBtn" onclick="sendMessage()">
-                    ➤
+                    <span>→</span>
                 </button>
             </div>
         </div>
