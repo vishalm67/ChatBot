@@ -37,7 +37,7 @@ public class IntentRecognitionService {
 
         // Time query patterns
         intentPatterns.put("TIME_QUERY", Pattern.compile(
-                "(?i).*(what time|current time|time now|tell me the time).*"));
+                "(?i).*(what is time|what time|current time|time now|tell me the time).*"));
 
         // Date query patterns
         intentPatterns.put("DATE_QUERY", Pattern.compile(
@@ -49,8 +49,9 @@ public class IntentRecognitionService {
 
         // Joke patterns
         intentPatterns.put("JOKE", Pattern.compile(
-                "(?i).*(joke|funny|make me laugh|tell me something funny|humor).*"));
-
+                "(?i).*(joke|funny|make me laugh|tell me something funny|humor|tell some tech comedy).*"));
+        //admin
+        intentPatterns.put("ADMIN_NAME",Pattern.compile("(?i).*(create|who is create you|who created you|who made you|founder|who is your guru).*"));
         // Thanks patterns
         intentPatterns.put("THANKS", Pattern.compile(
                 "(?i).*(thank|thanks|appreciate|grateful|thx).*"));

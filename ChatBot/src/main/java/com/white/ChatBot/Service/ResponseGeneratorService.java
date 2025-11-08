@@ -27,16 +27,26 @@ public class ResponseGeneratorService {
                 return "Today's date is: " +
                         LocalDateTime.now().format(DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy"));
             case "WEATHER_QUERY":
-                return "I don't have real-time weather access yet, but you can check weather.com or your local weather service for accurate forecasts!";
+                return "I don't have real-time weather access yet, but you can check weather.com or your local weather service for accurate forecasts!.In Future I will be prepared for It.";
             case "JOKE":
                 return getJoke();
             case "THANKS":
                 return getThankYouResponse();
             case "CAPABILITY_QUERY":
                 return getCapabilitiesResponse();
+            case "ADMIN_NAME":
+                return getMyName();
             default:
                 return getDefaultResponse(userMessage);
         }
+    }
+
+    private String getMyName() {
+        String[] tells = {"Vishal is Created Me for his Learning purpose",
+        "Vishal is Create Me, I am very glad to say i am one of the part of his college Projects!",
+          "Vishal From Final year student at VSB ENGINEERING College"};
+
+        return tells[random.nextInt(tells.length)];
     }
 
     private String getGreetingResponse() {
@@ -73,12 +83,12 @@ public class ResponseGeneratorService {
 
     private String getJoke() {
         String[] jokes = {
-                "Why do programmers prefer dark mode? Because light attracts bugs! 🐛",
-                "Why did the developer go broke? Because he used up all his cache! 💰",
-                "How many programmers does it take to change a light bulb? None, that's a hardware problem! 💡",
-                "Why do Java developers wear glasses? Because they don't C#! 👓",
-                "What's a programmer's favorite hangout place? The Foo Bar! 🍺",
-                "Why did the programmer quit his job? Because he didn't get arrays! 😄"
+                "Why do programmers prefer dark mode? Because light attracts bugs!",
+                "Why did the developer go broke? Because he used up all his cache!",
+                "How many programmers does it take to change a light bulb? None, that's a hardware problem!",
+                "Why do Java developers wear glasses? Because they don't C#!",
+                "What's a programmer's favorite hangout place? The Foo Bar!",
+                "Why did the programmer quit his job? Because he didn't get arrays!"
         };
         return jokes[random.nextInt(jokes.length)];
     }
